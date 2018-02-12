@@ -1,0 +1,7 @@
+
+lxd-forward
+
+It's a simple script to autotize port forward for LXD containers 
+
+Usage: lxd-forward [add|list|delete] [container] [port] [host port]
+
