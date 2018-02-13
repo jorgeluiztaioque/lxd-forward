@@ -5,7 +5,10 @@ container_port=$3
 host_port=$4
 
 function usage() {
-  echo "Usage: $(basename ${0}) [add|list|delete] [container] [port] [host port]"
+  echo "Usage: $(basename ${0})
+  list
+  add [container] [port] [host port]
+  delete [rule_number]"
   exit 1
 }
 
@@ -23,8 +26,7 @@ function list() {
     c_name=$(echo $line | awk '{print $1}')
     c_ip=$(echo $line | awk '{print $2}')
     forwarded_ports=$(iptables -t nat --line-numbers -L --numeric | grep $c_ip)
-    echo $forwarded_ports | while read ports_line; do
-      test -z "${rule_no}" || break
+    echo "$forwarded_ports" | while IFS= read -r ports_line; do
       rule_no=$(echo $ports_line | awk '{print $1}')
       host_port=$(echo $ports_line | awk '{print $8}')
       host_port=$(echo $host_port | awk -F\: '{print $2}')
@@ -47,7 +49,7 @@ function forward() {
   test -n "$c_port" || error "Container port not specified"
   test -n "$h_port" || h_port=$c_port
 
-  iptables -t nat -A PREROUTING -p tcp -i eth0 --dport "$h_port" -j DNAT --to-destination "${ip}:${c_port}"
+  iptables -t nat -A PREROUTING -p tcp --dport "$h_port" -j DNAT --to-destination "${ip}:${c_port}"
 }
 
 function delete() {
