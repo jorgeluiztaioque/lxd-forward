@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+# lxd-forward script
+# Version 0.1
+# Jorge Luiz Taioque
+# jorgeluiztaioque at gmail dot com
+
+# References
+# the main idea was found on ugle-z.no, I got this ideia and improve show to show and organizations to turn human experienci better
+
 cmd=$1
 container_name=$2
 container_port=$3
