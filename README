@@ -1,10 +1,9 @@
 
 lxd-forward
-------------------------------------------------
+========================================
 
 It's a simple script to simplify human read port forward for LXD containers 
 
--------------------------------------------------
 Usage: lxd-forward
   list
   add [container] [port] [host port]
