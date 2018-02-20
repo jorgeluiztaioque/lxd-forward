@@ -15,6 +15,8 @@ chmod +x lxd-forward
 ## Usage
 
 ```
+./lxd-forward
+
 Usage: lxd-forward
   list
   add [ip_version v4/v6] [container] [port] [host port]
