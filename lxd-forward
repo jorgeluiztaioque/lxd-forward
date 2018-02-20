@@ -37,7 +37,7 @@ test -n "$cmd" || usage
 
 function list() {
   echo "----------------------------------------------------------------------------------------------------------------------------"
-  printf "|\tRule\t|\tConteiner\t|\tIP\t\t\t\t\t|  Host port\t|   Container port |\n"
+  printf "|\tRule\t|\tContainer\t|\tIP\t\t\t\t\t|  Host port\t|   Container port |\n"
   echo "----------------------------------------------------------------------------------------------------------------------------"
 
   containers=$(lxc list | grep RUNNING | awk '{print $2, $6, $9}')
