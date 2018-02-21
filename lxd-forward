@@ -5,7 +5,7 @@
 # jorgeluiztaioque at gmail dot com
 
 # References
-# the main idea was found on ugle-z.no, I got this ideia and improve show to show and organizations to turn human experienci better
+# the main idea was found on ugle-z.no, I got this ideia and improve to show and organize informations to turn human experience better
 
 cmd=$1
 version=$2
