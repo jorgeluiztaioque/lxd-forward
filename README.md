@@ -1,7 +1,7 @@
 
 # lxd-forward
 
-A simple script to simplify port forward for LXD containers.
+A simple script to simplify port forward for LXC or LXD containers.
 
 ![https://www.ubuntu.com/containers/lxd](https://github.com/jorgeluiztaioque/lxd-forward/blob/master/lxd.png?raw=true)
 
