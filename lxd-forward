@@ -61,12 +61,13 @@ function list() {
     done
     echo "$forwarded_ports6" | while IFS= read -r ports_line; do
       rule_no=$(echo $ports_line | awk '{print $1}')
+      protocol=$(echo $ports_line | awk '{print $3}')
       host_port=$(echo $ports_line | awk '{print $7}')
       host_port=$(echo $host_port | awk -F\: '{print $2}')
       container=$(echo $ports_line | awk '{print $8}')
       container=$(echo $container | awk -F\]\: '{print $2}')
       if [ "${rule_no}" != "" ]; then
-        printf "|\t${rule_no} v6\t|\t${c_name}\t|\t${c_ip6}\t|\t${host_port}\t|\t${container}\t   |\n"
+        printf "|\t${rule_no} v4\t|\t${c_name}\t|\t${c_ip}\t\t\t|\t${protocol}\t|\t${host_port}\t|\t${container}\t   |\n"
       fi
     done
     echo "------------------------------------------------------------------------------------------------------------------------------------"
