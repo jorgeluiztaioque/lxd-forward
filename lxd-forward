@@ -9,20 +9,21 @@
 
 cmd=$1
 version=$2
-container_name=$3
-container_port=$4
-host_port=$5
+protocol=$3
+container_name=$4
+container_port=$5
+host_port=$6
 
 function usage() {
   echo "Usage: $(basename ${0})
   list
-  add [ip_version v4/v6] [container] [port] [host port]
+  add [ip_version v4/v6] [tcp/udp] [container] [port] [host port]
   del [ip_version v4/v6] [rule_number]
 
   Example:
   list
-  add v4 ubuntu 80 80
-  add v6 ubuntu 80 80
+  add v4 [tcp/udp] ubuntu 80 80
+  add v6 [tcp/udp] ubuntu 80 80
   del v4 1
   del v6 1"
   exit 1
@@ -36,9 +37,9 @@ function error() {
 test -n "$cmd" || usage
 
 function list() {
-  echo "----------------------------------------------------------------------------------------------------------------------------"
-  printf "|\tRule\t|\tContainer\t|\tIP\t\t\t\t\t|  Host port\t|   Container port |\n"
-  echo "----------------------------------------------------------------------------------------------------------------------------"
+  echo "------------------------------------------------------------------------------------------------------------------------------------"
+  printf "|\tRule\t|\tContainer\t|\tIP\t\t\t\t|  Protocol\t| Host port\t|   Container port |\n"
+  echo "------------------------------------------------------------------------------------------------------------------------------------"
 
   containers=$(lxc list | grep RUNNING | awk '{print $2, $6, $9}')
   echo "${containers}" | while read line; do
@@ -49,12 +50,13 @@ function list() {
     forwarded_ports6=$(ip6tables -t nat --line-numbers -L --numeric | grep $c_ip6)
     echo "$forwarded_ports" | while IFS= read -r ports_line; do
       rule_no=$(echo $ports_line | awk '{print $1}')
+      protocol=$(echo $ports_line | awk '{print $3}')
       host_port=$(echo $ports_line | awk '{print $8}')
       host_port=$(echo $host_port | awk -F\: '{print $2}')
       container=$(echo $ports_line | awk '{print $9}')
       container=$(echo $container | awk -F\: '{print $3}')
       if [ "${rule_no}" != "" ]; then
-        printf "|\t${rule_no} v4\t|\t${c_name}\t|\t${c_ip}\t\t\t\t|\t${host_port}\t|\t${container}\t   |\n"
+        printf "|\t${rule_no} v4\t|\t${c_name}\t|\t${c_ip}\t\t\t|\t${protocol}\t|\t${host_port}\t|\t${container}\t   |\n"
       fi
     done
     echo "$forwarded_ports6" | while IFS= read -r ports_line; do
@@ -67,15 +69,15 @@ function list() {
         printf "|\t${rule_no} v6\t|\t${c_name}\t|\t${c_ip6}\t|\t${host_port}\t|\t${container}\t   |\n"
       fi
     done
-    echo "----------------------------------------------------------------------------------------------------------------------------"
+    echo "------------------------------------------------------------------------------------------------------------------------------------"
 done
 }
 
 function add() {
 case "$version" in
-  "v4") forward $container_name $container_port $host_port
+  "v4") forward $protocol $container_name $container_port $host_port
   ;;
-  "v6") forward6 $container_name $container_port $host_port
+  "v6") forward6 $protocol $container_name $container_port $host_port
   ;;
   *) usage
   ;;
@@ -83,29 +85,31 @@ esac
 }
 
 function forward() {
-  c_name=$1
-  c_port=$2
-  h_port=$3
+  protocol=$1
+  c_name=$2
+  c_port=$3
+  h_port=$4
   container_info=$(lxc list $c_name | grep RUNNING | awk '{print $2, $6, $9}' | grep $c_name)
   ip=$(echo -n $container_info | awk '{printf("%s",$2)}')
   test -n "$ip" || error "Container not found or not assigned an IP address"
   test -n "$c_port" || error "Container port not specified"
   test -n "$h_port" || h_port=$c_port
 
-  iptables -t nat -A PREROUTING -p tcp --dport "$h_port" -j DNAT --to-destination "${ip}:${c_port}"
+  iptables -t nat -A PREROUTING -p $protocol --dport "$h_port" -j DNAT --to-destination "${ip}:${c_port}"
 }
 
 function forward6() {
-  c_name=$1
-  c_port=$2
-  h_port=$3
+  protocol=$1
+  c_name=$2
+  c_port=$3
+  h_port=$4
   container_info=$(lxc list $c_name | grep RUNNING | awk '{print $2, $6, $9}' | grep $c_name)
   ip6=$(echo -n $container_info | awk '{printf("%s",$3)}')
   test -n "$ip6" || error "Container not found or not assigned an IP6 address"
   test -n "$c_port" || error "Container port not specified"
   test -n "$h_port" || h_port=$c_port
 
-  ip6tables -t nat -A PREROUTING -p tcp --dport "$h_port" -j DNAT --to-destination "[${ip6}]":"${c_port}"
+  ip6tables -t nat -A PREROUTING -p $protocol --dport "$h_port" -j DNAT --to-destination "[${ip6}]":"${c_port}"
 }
 
 function del() {
