@@ -19,13 +19,13 @@ chmod +x lxd-forward
 
 Usage: lxd-forward
   list
-  add [ip_version v4/v6] [container] [port] [host port]
+  add [ip_version v4/v6] [tcp/udp] [container] [port] [host port]
   del [ip_version v4/v6] [rule_number]
 
   Example:
   list
-  add v4 ubuntu 80 80
-  add v6 ubuntu 80 80
+  add v4 [tcp/udp] ubuntu 80 80
+  add v6 [tcp/udp] ubuntu 80 80
   del v4 1
-  del v6 1
+  del v6 1"
 ```
