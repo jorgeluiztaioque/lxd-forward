@@ -37,15 +37,21 @@ function error() {
 test -n "$cmd" || usage
 
 function list() {
-  echo "------------------------------------------------------------------------------------------------------------------------------------"
-  printf "|\tRule\t|\tContainer\t|\tIP\t\t\t\t|  Protocol\t| Host port\t|   Container port |\n"
-  echo "------------------------------------------------------------------------------------------------------------------------------------"
+  echo "-----------------------------------------------------------------------------------------------------------------------------------------"
+  echo -e "|\tRule\t|\t  Container\t|\t\t      IP\t\t\t|    Protocol\t|   Host port\t| Container port|"
+  echo "-----------------------------------------------------------------------------------------------------------------------------------------"
 
   containers=$(lxc list | grep RUNNING | awk '{print $2, $6, $9}')
   echo "${containers}" | while read line; do
     c_name=$(echo $line | awk '{print $1}')
     c_ip=$(echo $line | awk '{print $2}')
     c_ip6=$(echo $line | awk '{print $3}')
+    if [ "$c_ip" = "" ]; then
+	    c_ip="none"
+	fi
+    if [ "$c_ip6" = "" ]; then
+	    c_ip6="none"
+	fi
     forwarded_ports=$(iptables -t nat --line-numbers -L --numeric | grep $c_ip)
     forwarded_ports6=$(ip6tables -t nat --line-numbers -L --numeric | grep $c_ip6)
     echo "$forwarded_ports" | while IFS= read -r ports_line; do
@@ -56,7 +62,7 @@ function list() {
       container=$(echo $ports_line | awk '{print $9}')
       container=$(echo $container | awk -F\: '{print $3}')
       if [ "${rule_no}" != "" ]; then
-        printf "|\t${rule_no} v4\t|\t${c_name}\t|\t${c_ip}\t\t\t|\t${protocol}\t|\t${host_port}\t|\t${container}\t   |\n"
+        echo -e "|\t${rule_no} v4\t|\t${c_name}\t|\t${c_ip}\t\t\t\t|\t${protocol}\t|\t${host_port}\t|\t${container}\t|"
       fi
     done
     echo "$forwarded_ports6" | while IFS= read -r ports_line; do
@@ -67,10 +73,10 @@ function list() {
       container=$(echo $ports_line | awk '{print $8}')
       container=$(echo $container | awk -F\]\: '{print $2}')
       if [ "${rule_no}" != "" ]; then
-        printf "|\t${rule_no} v4\t|\t${c_name}\t|\t${c_ip}\t\t\t|\t${protocol}\t|\t${host_port}\t|\t${container}\t   |\n"
+        echo -e "|\t${rule_no} v6\t|\t${c_name}\t|\t${c_ip6}\t|\t${protocol}\t|\t${host_port}\t|\t${container}\t|"
       fi
     done
-    echo "------------------------------------------------------------------------------------------------------------------------------------"
+    echo "-----------------------------------------------------------------------------------------------------------------------------------------"
 done
 }
 
